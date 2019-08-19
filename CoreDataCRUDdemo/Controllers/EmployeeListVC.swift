@@ -21,7 +21,7 @@ class EmployeeListVC: UIViewController {
         super.viewDidLoad()
         employeeTable.delegate = self
         employeeTable.dataSource = self
-        self.employeeArray.removeAll()
+        
         self.getEmployees()
         // Do any additional setup after loading the view, typically from a nib.
     }
@@ -33,7 +33,7 @@ class EmployeeListVC: UIViewController {
         
         let context = appDelegate.persistentContainer.viewContext
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Employee")
-        
+        self.employeeArray.removeAll()
         do {
             let Employees = try context.fetch(fetchRequest)
             guard let arrEmp = Employees as? [Employee] else {return}
@@ -48,29 +48,22 @@ class EmployeeListVC: UIViewController {
         
     }
     
-    func deleteEmployee(index:Int){
+    func deleteEmployee(emp:Employee) {
         
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {return}
-        
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else{return}
         let context = appDelegate.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Employee")
         
+        context.delete(emp)
         do {
-            let result = try context.fetch(fetchRequest)
-            let objectToDelete = result[index] as! Employee
-            context.delete(objectToDelete)
-            do{
-                try context.save()
-                self.employeeArray.remove(at: index)
-                DispatchQueue.main.async {
-                    self.employeeTable.reloadData()
-                }
-            }catch {
-                print("error in saving")
-            }
-        }catch{
-            print("error in fetching")
+            
+            try context.save()
+            self.getEmployees()
+            
+        } catch {
+            
+            print("Failed saving")
         }
+        
     }
 
     
@@ -80,11 +73,11 @@ class EmployeeListVC: UIViewController {
         vc.employeeArr = self.employeeArray
         vc.callback = { (id) -> Void in
             print("callback to add")
-            self.employeeArray.removeAll()
+            
             self.getEmployees()
             
         }
-        self.navigationController?.pushViewController(vc, animated: true)
+        self.navigationController?.pushViewController(vc, animated: false)
         
     }
     
@@ -138,11 +131,11 @@ extension EmployeeListVC: UITableViewDataSource,UITableViewDelegate{
                 
                 vc.callback = { (id) -> Void in
                     print("callback to edit")
-                    self.employeeArray.removeAll()
+                    
                     self.getEmployees()
                     
                 }
-                self.navigationController?.pushViewController(vc, animated: true)
+                self.navigationController?.pushViewController(vc, animated: false)
                 
             }
         })
@@ -150,8 +143,8 @@ extension EmployeeListVC: UITableViewDataSource,UITableViewDelegate{
         
         // action two
         let deleteAction = UITableViewRowAction(style: .default, title: "Delete", handler: { (action, indexPath) in
-        
-            self.deleteEmployee(index:indexPath.row)
+           let empObj = self.employeeArray[indexPath.row]
+           self.deleteEmployee(emp:empObj)
             
         })
         deleteAction.backgroundColor = UIColor.red
@@ -159,9 +152,7 @@ extension EmployeeListVC: UITableViewDataSource,UITableViewDelegate{
         return [editAction, deleteAction]
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-    }
+  
 }
 
 

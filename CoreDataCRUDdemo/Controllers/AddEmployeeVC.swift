@@ -29,7 +29,9 @@ class AddEmployeeVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-       txtfEmpPhone.delegate = self
+        txtfEmpName.delegate = self
+        txtfEmpPhone.delegate = self
+        txtfEmpCity.delegate = self
         if let empObj = empObj{
             txtfEmpName.text = empObj.name
             txtfEmpPhone.text = String(describing: empObj.phone)
@@ -76,7 +78,7 @@ class AddEmployeeVC: UIViewController {
             try managedContext.save()
             guard let call = callback else{return}
             call(1)
-            self.navigationController?.popViewController(animated: true)
+            self.navigationController?.popViewController(animated: false)
             
         }catch let error as NSError {
             
@@ -134,9 +136,18 @@ class AddEmployeeVC: UIViewController {
 extension AddEmployeeVC: UITextFieldDelegate{
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        guard CharacterSet(charactersIn: "0123456789").isSuperset(of: CharacterSet(charactersIn: string)) else {
-            return false
+        if textField == self.txtfEmpPhone{
+            guard CharacterSet(charactersIn: "0123456789").isSuperset(of: CharacterSet(charactersIn: string)) else {
+                return false
+            }
+            return true
+        }else{
+            return true
         }
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
         return true
     }
     
